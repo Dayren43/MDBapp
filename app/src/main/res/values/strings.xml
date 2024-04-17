@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">The Movide DB V24</string>
+    <string name="movie_Detail">Movie Details</string>
+    <string name="back_button">Back</string>
+    <string name="popular_actors">Popular Actors</string>
+    <string name="actor_list_button">Actor List Button</string>
+</resources>

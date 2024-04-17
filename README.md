@@ -1,2 +1,0 @@
-# MDBapp
-Movie DB app
