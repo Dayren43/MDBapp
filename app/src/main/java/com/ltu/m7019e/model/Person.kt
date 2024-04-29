@@ -1,5 +1,10 @@
 package com.ltu.m7019e.model
 
+data class PersonResponse(
+    val page: Int,
+    val results: List<Movie>
+)
+
 data class Person(
     var adult: Boolean,
     var gender: Int,

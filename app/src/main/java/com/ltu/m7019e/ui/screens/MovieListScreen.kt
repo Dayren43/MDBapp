@@ -1,15 +1,16 @@
 package com.ltu.m7019e.ui.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -24,23 +26,73 @@ import coil.compose.AsyncImage
 import com.ltu.m7019e.model.Movie
 import com.ltu.m7019e.ui.theme.TheMovideDBV24Theme
 import com.ltu.m7019e.utils.Constants
+import com.ltu.m7019e.viewmodel.MovieListUiState
 
 @Composable
 fun MovieListScreen(
-    movieList: List<Movie>,
+    movieListUiState: MovieListUiState,
     onMovieListItemClicked: (Movie) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     LazyColumn(modifier = modifier) {
-        items(movieList) { movie ->
-            MovieListItemCard(
-                movie = movie,
-                onMovieListItemClicked,
-                modifier = Modifier.padding(8.dp)
-            )
+        when (movieListUiState) {
+            is MovieListUiState.Success -> {
+                val movies = movieListUiState.movies
+                val movieChunks = if (isLandscape) movies.chunked(2) else listOf(movies)
+
+                movieChunks.forEach { chunk ->
+                    item {
+                        if (isLandscape)
+                            Row(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                chunk.forEach { movie ->
+                                    MovieListItemCard(
+                                        movie = movie,
+                                        onMovieListItemClicked,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(8.dp)
+                                    )
+                                }
+                            }
+                        else
+                            chunk.forEach { movie ->
+                                MovieListItemCard(
+                                    movie = movie,
+                                    onMovieListItemClicked,
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                )
+                            }
+                    }
+                }
+            }
+
+            MovieListUiState.Error -> {
+                item {
+                    Text(
+                        text = "Error :(",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+            MovieListUiState.Loading -> {
+                item {
+                    Text(
+                        text = "Loading...",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +102,7 @@ fun MovieListItemCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         onClick = {
             onMovieListItemClicked(movie)
         }
@@ -83,6 +135,8 @@ fun MovieListItemCard(
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
                 )
                 Spacer(modifier = Modifier.size(8.dp))
             }

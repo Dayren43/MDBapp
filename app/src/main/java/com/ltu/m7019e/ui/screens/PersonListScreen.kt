@@ -1,5 +1,6 @@
 package com.ltu.m7019e.ui.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.ltu.m7019e.utils.Constants
@@ -37,14 +39,39 @@ import com.ltu.m7019e.utils.Constants
 @Composable
 fun PersonListScreen(
     personList: List<Person>,
+    onPersonListItemClicked: (Person) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     LazyColumn(modifier = modifier) {
-        items(personList) { person ->
-            PersonListScreenCard(
-                person = person,
-                modifier = Modifier.padding(8.dp)
-            )
+        val personChunks = if (isLandscape) personList.chunked(2) else listOf(personList)
+
+        personChunks.forEach { chunk ->
+            item {
+                if (isLandscape)
+                    Row(modifier = Modifier.fillMaxWidth()) { // Apply modifier here
+                        chunk.forEach { person ->
+                            PersonListScreenCard(
+                                person = person,
+                                onPersonListItemClicked,
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .weight(1f)
+                            )
+                        }
+                    }
+                else
+                    chunk.forEach { person ->
+                        PersonListScreenCard(
+                            person = person,
+                            onPersonListItemClicked,
+                            modifier = Modifier
+                                .padding(8.dp)
+                        )
+                    }
+
+            }
         }
     }
 }
@@ -53,12 +80,15 @@ fun PersonListScreen(
 @Composable
 fun PersonListScreenCard(
     person: Person,
+    onPersonListItemClicked: (Person) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth(),
-        onClick = {}
+        onClick = {
+            onPersonListItemClicked(person)
+        }
     ) {
 
         Row() {
@@ -100,7 +130,7 @@ fun PersonListScreenCard(
     }
 }
 
-private fun mapGender(gender: Int): String {
+fun mapGender(gender: Int): String {
     return when (gender) {
         1 -> "Female"
         2 -> "Male"
@@ -123,7 +153,8 @@ fun PersonListScreenPreview() {
                 popularity = 219.552f,
                 profile_path = "/whNwkEQYWLFJA8ij0WyOOAD5xhQ.jpg",
                 known_for = listOf(345940, 4108, 337339) // List of movie IDs
-            )
+            ),
+            {}
         )
     }
 }

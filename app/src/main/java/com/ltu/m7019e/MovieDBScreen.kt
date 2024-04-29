@@ -14,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -25,17 +24,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.ltu.m7019e.database.Movies
 import com.ltu.m7019e.database.People
 import com.ltu.m7019e.ui.screens.MovieDetailScreen
 import com.ltu.m7019e.ui.screens.MovieListScreen
+import com.ltu.m7019e.ui.screens.PersonDetailScreen
 import com.ltu.m7019e.ui.screens.PersonListScreen
 import com.ltu.m7019e.viewmodel.MovieDBViewModel
 
 enum class MovieDBScreen(@StringRes val title: Int) {
     List(title = R.string.app_name),
     Detail(title = R.string.movie_Detail),
-    People(title = R.string.popular_actors)
+    People(title = R.string.popular_actors),
+    PeopleDetail(title = R.string.actor_details)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,7 +76,6 @@ fun MovieDBAppBar(
 
 @Composable
 fun TheMovieDBApp(
-    viewModel: MovieDBViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -95,7 +94,7 @@ fun TheMovieDBApp(
             )
         }
     ) { innerPadding ->
-        val uiState by viewModel.uiState.collectAsState()
+        val movieDBViewModel: MovieDBViewModel = viewModel(factory = MovieDBViewModel.Factory)
 
         NavHost(
             navController = navController,
@@ -106,9 +105,9 @@ fun TheMovieDBApp(
         ) {
             composable(route = MovieDBScreen.List.name) {
                 MovieListScreen(
-                    movieList = Movies().getMovies(),
+                   movieDBViewModel.movieListUiState,
                     onMovieListItemClicked = { movie ->
-                        viewModel.setSelectedMovie(movie)
+                        movieDBViewModel.setSelectedMovie(movie)
                         navController.navigate(MovieDBScreen.Detail.name)
                     },
                     modifier = Modifier
@@ -117,22 +116,29 @@ fun TheMovieDBApp(
                 )
             }
             composable(route = MovieDBScreen.Detail.name) {
-                uiState.selectedMovie?.let { movie ->
-                    MovieDetailScreen(
-                        movie = movie,
-                        modifier = Modifier
-                    )
-                }
+                MovieDetailScreen(
+                    movie = movieDBViewModel.selectedMovieUiState,
+                    modifier = Modifier
+                )
             }
             composable(route = MovieDBScreen.People.name) {
                 PersonListScreen(
                     personList = People().getPeople(),
+                    onPersonListItemClicked = { person ->
+                        movieDBViewModel.setSelectedPerson(person)
+                        navController.navigate(MovieDBScreen.PeopleDetail.name)
+                    },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp)
                 )
             }
+            composable(route = MovieDBScreen.PeopleDetail.name) {
+                PersonDetailScreen(
+                    persone = movieDBViewModel.selectedPersonUiState,
+                    modifier = Modifier
+                )
+            }
         }
-
     }
 }

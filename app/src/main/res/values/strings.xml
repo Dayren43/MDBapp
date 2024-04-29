@@ -4,4 +4,5 @@
     <string name="back_button">Back</string>
     <string name="popular_actors">Popular Actors</string>
     <string name="actor_list_button">Actor List Button</string>
+    <string name="actor_details">Actor Details</string>
 </resources>
