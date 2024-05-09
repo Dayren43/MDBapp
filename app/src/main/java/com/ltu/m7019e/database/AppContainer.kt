@@ -1,6 +1,7 @@
 package com.ltu.m7019e.database
 
 
+import android.content.Context
 import com.ltu.m7019e.Network.MovieDBApiService
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -10,9 +11,10 @@ import com.ltu.m7019e.utils.Constants
 
 interface AppContainer {
     val moviesRepository: MoviesRepository
+    val savedMovieRepository: SavedMovieRepository
 }
 
-class DefaultAppContainer : AppContainer{
+class DefaultAppContainer(context: Context) : AppContainer{
 
     val movieDBJson = Json{
         ignoreUnknownKeys = true
@@ -36,5 +38,9 @@ class DefaultAppContainer : AppContainer{
 
     override val moviesRepository: MoviesRepository by lazy {
         NetworkMoviesRepository(retrofitService)
+    }
+
+    override val savedMovieRepository: SavedMovieRepository by lazy {
+        FavoriteMoviesRepository(MovieDatabase.getDatabase(context).movieDao())
     }
 }

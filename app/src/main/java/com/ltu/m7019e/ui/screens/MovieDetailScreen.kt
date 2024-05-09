@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import android.widget.ScrollView
+import android.widget.Switch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,10 +12,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -26,19 +29,20 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.ltu.m7019e.model.Movie
 import com.ltu.m7019e.utils.Constants
+import com.ltu.m7019e.viewmodel.MovieDBViewModel
 import com.ltu.m7019e.viewmodel.SelectedMovieUiState
 
 @Composable
 fun MovieDetailScreen(
-    movie: SelectedMovieUiState,
+    movieDBViewModel: MovieDBViewModel,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-
-    when (movie) {
+    val selectedMovieUiState = movieDBViewModel.selectedMovieUiState
+    when (selectedMovieUiState) {
         is SelectedMovieUiState.Success -> {
-            val movie = movie.movie
+            val movie = selectedMovieUiState.movie
 
             if (isLandscape) {
                 Row(modifier = modifier.fillMaxSize()) {
@@ -56,7 +60,9 @@ fun MovieDetailScreen(
 
                     // Movie details on the right
                     Column(
-                        modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.Top
                     ) {
                         Text(
@@ -75,6 +81,19 @@ fun MovieDetailScreen(
                             maxLines = 3,
                             overflow = TextOverflow.Ellipsis,
                         )
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Row {
+                            Text(
+                                text = "Favorite",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Switch(checked = selectedMovieUiState.isFavorite, onCheckedChange = {
+                                if (it)
+                                    movieDBViewModel.saveMovie(selectedMovieUiState.movie)
+                                else
+                                    movieDBViewModel.deleteMovie(selectedMovieUiState.movie)
+                            })
+                        }
                         Spacer(modifier = Modifier.size(8.dp))
                         Button(
                             onClick = {
@@ -119,6 +138,19 @@ fun MovieDetailScreen(
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
                     )
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Row {
+                        Text(
+                            text = "Favorite",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Switch(checked = selectedMovieUiState.isFavorite, onCheckedChange = {
+                            if (it)
+                                movieDBViewModel.saveMovie(selectedMovieUiState.movie)
+                            else
+                                movieDBViewModel.deleteMovie(selectedMovieUiState.movie)
+                        })
+                    }
                     Spacer(modifier = Modifier.size(8.dp))
                     Button(
                         onClick = {
