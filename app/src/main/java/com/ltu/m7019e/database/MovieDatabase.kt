@@ -4,12 +4,19 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.ltu.m7019e.model.Movie
+import androidx.room.TypeConverters
+import com.ltu.m7019e.model.FavoriteMovies
+import com.ltu.m7019e.model.MovieTypeConverter
+import com.ltu.m7019e.model.PopularCache
+import com.ltu.m7019e.model.TopRatedCache
 
-@Database(entities = [Movie::class], version = 1, exportSchema = false)
+@Database(entities = [FavoriteMovies::class, TopRatedCache::class, PopularCache::class], version = 3, exportSchema = false)
+@TypeConverters(MovieTypeConverter::class)
 abstract class MovieDatabase : RoomDatabase() {
 
     abstract fun movieDao(): MovieDao
+    abstract fun movieCacheDaoPopular(): MovieCacheDaoPopular
+    abstract fun movieCacheDaoTopRated(): MovieCacheDaoTopRated
 
     companion object{
         @Volatile

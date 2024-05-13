@@ -1,4 +1,5 @@
 package com.ltu.m7019e
+import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -36,6 +37,7 @@ import com.ltu.m7019e.ui.screens.MovieListScreen
 import com.ltu.m7019e.ui.screens.PersonDetailScreen
 import com.ltu.m7019e.ui.screens.PersonListScreen
 import com.ltu.m7019e.viewmodel.MovieDBViewModel
+import com.ltu.m7019e.workers.RefreshMovieCacheWorker
 
 enum class MovieDBScreen(@StringRes val title: Int) {
     List(title = R.string.app_name),
@@ -73,6 +75,7 @@ fun MovieDBAppBar(
                     onClick = {
                         menuExpanded = false
                         movieDBViewModel.getPopularMovies()
+
                     },
                     text = {
                         Text(stringResource(R.string.popular_movies))
@@ -120,6 +123,7 @@ fun MovieDBAppBar(
     )
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun TheMovieDBApp(
     navController: NavHostController = rememberNavController()
@@ -130,6 +134,8 @@ fun TheMovieDBApp(
         backStackEntry?.destination?.route ?: MovieDBScreen.List.name
     )
     val movieDBViewModel: MovieDBViewModel = viewModel(factory = MovieDBViewModel.Factory)
+    RefreshMovieCacheWorker.setViewModel(movieDBViewModel);
+
     Scaffold(
         topBar = {
             MovieDBAppBar(
@@ -152,7 +158,7 @@ fun TheMovieDBApp(
         ) {
             composable(route = MovieDBScreen.List.name) {
                 MovieListScreen(
-                   movieDBViewModel.movieListUiState,
+                    movieDBViewModel,
                     onMovieListItemClicked = { movie ->
                         movieDBViewModel.setSelectedMovie(movie)
                         navController.navigate(MovieDBScreen.Detail.name)

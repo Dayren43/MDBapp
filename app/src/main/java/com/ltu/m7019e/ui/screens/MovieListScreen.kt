@@ -16,6 +16,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -26,20 +28,27 @@ import coil.compose.AsyncImage
 import com.ltu.m7019e.model.Movie
 import com.ltu.m7019e.ui.theme.TheMovideDBV24Theme
 import com.ltu.m7019e.utils.Constants
+import com.ltu.m7019e.viewmodel.MovieDBViewModel
 import com.ltu.m7019e.viewmodel.MovieListUiState
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun MovieListScreen(
-    movieListUiState: MovieListUiState,
+    viewModel: MovieDBViewModel,
     onMovieListItemClicked: (Movie) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val movieListUiState by viewModel.movieListUiState.collectAsState()
+
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     LazyColumn(modifier = modifier) {
+
         when (movieListUiState) {
             is MovieListUiState.Success -> {
-                val movies = movieListUiState.movies
+
+                val movies = (movieListUiState as MovieListUiState.Success).movies
                 val movieChunks = if (isLandscape) movies.chunked(2) else listOf(movies)
 
                 movieChunks.forEach { chunk ->

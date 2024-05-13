@@ -12,6 +12,8 @@ import com.ltu.m7019e.utils.Constants
 interface AppContainer {
     val moviesRepository: MoviesRepository
     val savedMovieRepository: SavedMovieRepository
+    val popularCacheMoviesRepository: PopularCacheMoviesRepository
+    val topRatedCacheMoviesRepository: TopRatedCacheMoviesRepository
 }
 
 class DefaultAppContainer(context: Context) : AppContainer{
@@ -37,10 +39,19 @@ class DefaultAppContainer(context: Context) : AppContainer{
     }
 
     override val moviesRepository: MoviesRepository by lazy {
-        NetworkMoviesRepository(retrofitService)
+        NetworkMoviesRepository(context, retrofitService)
     }
 
     override val savedMovieRepository: SavedMovieRepository by lazy {
         FavoriteMoviesRepository(MovieDatabase.getDatabase(context).movieDao())
     }
+
+    override val popularCacheMoviesRepository: PopularCacheMoviesRepository by lazy {
+        PopularCacheMoviesRepository(MovieDatabase.getDatabase(context).movieCacheDaoPopular())
+    }
+
+    override val topRatedCacheMoviesRepository: TopRatedCacheMoviesRepository by lazy {
+        TopRatedCacheMoviesRepository(MovieDatabase.getDatabase(context).movieCacheDaoTopRated())
+    }
+
 }
